@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PubSub from 'pubsub-js';
 import Header from './components/Header';
+import Buscar from './components/Buscar';
+import Reservas from './components/Reservas';
 import './assets/css/main.css';
 
 export default class App extends Component {
@@ -61,12 +63,20 @@ export default class App extends Component {
 	render() {
 		const { children } = this.props;
     	let childrenWithProps = React.Children.map(children, child =>
-      		React.cloneElement(child, { usuario: this.state.usuario }));
+			  React.cloneElement(child, { usuario: this.state.usuario }));
+
+		if (childrenWithProps === undefined) {
+			if (this.state.usuario.nivelAcesso === 2) {
+				childrenWithProps = <Buscar {...this.props} usuario={this.state.usuario} />;
+			} else {
+				childrenWithProps = <Reservas {...this.props} usuario={this.state.usuario} />;
+			}
+		}
 
 		return (
 			<div className="App">
 				<Header usuario={this.state.usuario} />
-				<div id="principal" style={{marginTop: '56px'}}>				
+				<div id="principal" style={{marginTop: '56px'}}>
 					{childrenWithProps}
 				</div>
 			</div>

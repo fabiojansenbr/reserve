@@ -13,7 +13,8 @@ export default class Reservas extends Component {
 			msg: '',
 			tipoAlerta: '',
 			usuario: {},
-			reservas: []
+			reservas: [],
+			mostra: 1
 		}
 	}
 
@@ -87,6 +88,9 @@ export default class Reservas extends Component {
 		let pad = "00"
 		let ans = pad.substring(0, pad.length - minuto.length) + minuto
 
+		if (hora < 10) {
+			hora = '0' + hora;
+		}
 
 		return `${hora}:${ans}`;
 	}
@@ -101,20 +105,31 @@ export default class Reservas extends Component {
 		};
 
 		let linha = $('#exclui-reserva-' + id).closest('tr');
+		this.setState({mostra: 1});
 
 		fetch(`http://localhost:8080/api/reservas/${id}`, requestInfo)
 			.then(response => {
 				if (response.ok) {
+					return response.json();
+				} else if (response.status === 400) {
+					this.setState({mostra: 0});
+					return response.json();
+				} else {
+					this.mostraMensagem('Não foi possível acessar o recurso no sistema.', 'danger');
+				}
+			})
+			.then(result => {
+				if (result.msg !== undefined) {
+					this.mostraMensagem(result.msg, 'danger');	
+				} else {
 					linha.fadeOut(400);
 					setTimeout(() => {
 						linha.remove();
 					}, 400);
 					this.setState({reservas: this.state.reservas.filter(r => r.id !== id)});
-				} else {
-					this.mostraMensagem('Não foi possível acessar o recurso no sistema.', 'danger');
+					this.mostraMensagem('A reserva foi excluída com sucesso.', 'success');
 				}
 			})
-			.then(() => this.mostraMensagem('A reserva foi excluída com sucesso.', 'success'))
 			.catch(() => this.mostraMensagem('Não foi possível acessar o recurso no sistema.', 'danger'));
 	}
 
@@ -147,10 +162,15 @@ export default class Reservas extends Component {
 										<td align="center">{this.formataHora(reserva.datafim)}</td>
 										<td align="center">{reserva.confirmada ? 'Sim' : 'Não'}</td>
 										<td>
-											<Link to={{pathname: '/cadastro/edit', state: {id: reserva.id}}}>
-												<SubmitCustomizado className="btn btn-outline-info" 
+											{reserva.confirmada ? (
+												<SubmitCustomizado disabled="disabled" className="btn btn-outline-info" 
 													valor="edita" titulo={<i className="far fa-edit"></i>}/>
-											</Link>
+											) : (
+												<Link  to={{pathname: '/cadastro/edit', state: {id: reserva.id}}}>
+													<SubmitCustomizado className="btn btn-outline-info" 
+														valor="edita" titulo={<i className="far fa-edit"></i>}/>
+												</Link>
+											)}
 										</td>
 										<td>
 											<SubmitCustomizado id={"exclui-reserva-" + reserva.id} acao={() => this.exclui(reserva.id)} 

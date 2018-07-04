@@ -62,7 +62,7 @@ export default class CadastroEmpresa extends Component {
 			.then(result => {
 				if (result.token) {
 					localStorage.setItem('auth-token', result.token);
-					this.props.history.push('/');
+					this.props.history.push('/reservas');
 				} else {
 					this.setState({msg: result});
 				}

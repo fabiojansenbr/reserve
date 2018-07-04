@@ -17,24 +17,19 @@ export default class Header extends Component {
 		$('.navbar-brand').click(() => {
 			$('#items-header li').removeClass('active');
 		});
-
-		$('#botao-menu').click(() => {
-			$('#wrapper').toggle();
-		});
 	}
 
 	render() {
 		return(
-			<nav className="navbar navbar-expand-md navbar-dark bg-dark">
+			<nav key={1} className="navbar navbar-expand-md navbar-dark bg-dark">
 				<Link className="navbar-brand" to={'/'}>Reserve</Link>
-				<button id="botao-menu" className="navbar-toggler" type="button" 
+				<button id="botao-menu" className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-conteudo"
 					aria-controls="navbar-conteudo" aria-expanded="false" aria-label="Toggle navigation">
 					<span className="navbar-toggler-icon"></span>
 				</button>
-
 				<div className="collapse navbar-collapse" id="navbar-conteudo">
 					{this.props.usuario.nivelAcesso === 2 ? (
-						<ul id="items-header" className="navbar-nav mr-auto">
+						<ul id="items-header" className="nav navbar-nav mr-auto">
 							<li className="nav-item active">
 								<Link className="nav-link" to={'/buscar'}>Buscar<span className="sr-only">(current)</span></Link>
 							</li>

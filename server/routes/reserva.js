@@ -2,7 +2,8 @@ module.exports = app => {
 	const api = app.controllers.reserva;
 
 	app.route('/api/reservas')
-		.post(api.adiciona);
+		.post(api.adiciona)
+		.put(api.altera);
 
 	app.route('/api/reservas/:id')
 		.get(api.lista)

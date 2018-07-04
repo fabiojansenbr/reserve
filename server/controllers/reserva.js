@@ -166,6 +166,56 @@ module.exports = app => {
 			.catch(err => console.log(err));
 	};
 
+	api.altera = (req, res) => {
+		let dados = req.body;
+
+		let erros = validaDados(dados);
+		let hora;
+
+		if (erros.length > 0) {
+			res.status(HttpStatus.BAD_REQUEST).json(erros);
+			return;
+		}
+
+		dados.datainicio = formataData(dados.datareserva);
+		dados.datafim = formataData(dados.datareserva);
+		hora = dados.horainicio.split(':');
+		dados.datainicio.setHours(hora[0], hora[1]);
+		hora = dados.horafim.split(':');
+		dados.datafim.setHours(hora[0], hora[1]);		
+		dados.confirmada = false;
+
+		let cria = true;
+
+		reserva.findOne({where: {id: dados.id}})
+			.then(result => {
+				if (result.confirmada) {
+					res.status(HttpStatus.BAD_REQUEST).json({msg: 'A reserva já foi confirmada pelo cliente.'});
+					return;
+				} else {
+					reserva.findAll({where: {numeromesa: dados.numeromesa, restauranteId: dados.restauranteId, id: {[Op.ne]: dados.id}}})
+						.then(result => {
+							if (result) {
+								result.forEach(r => {
+									if (dateRangeOverlaps(dados.datainicio, dados.datafim, r.datainicio, r.datafim)) {
+										cria = false;
+									}
+								});
+							}
+							if (cria) {
+								reserva.update(dados, {where: {id: dados.id}})
+									.then(result => res.json(result))
+									.catch(err => console.log(err));
+							} else {
+								res.status(HttpStatus.BAD_REQUEST).json([{field: 'numeromesa', message: 'Já existe uma reserva nesta mesa para este horário.'}]);
+							}
+						})
+						.catch(err => console.log(err));
+				}
+			})
+			.catch(() => res.status(HttpStatus.PRECONDITION_FAILED));
+	};
+
 	api.atualiza = (req, res) => {
 		let dados = req.body;
 
@@ -191,26 +241,35 @@ module.exports = app => {
 	};
 
 	api.lista = (req, res) => {
-		reserva.findAll({where: {restauranteId: req.params.id}, order: ['datainicio']})
+		reserva.findAll({where: {restauranteId: req.params.id, datainicio: {[Op.gt]: new Date().setHours(0, 0, 0)}}, order: ['datainicio']})
 			.then(result => res.json(result))
 			.catch(() => res.sendStatus(HttpStatus.PRECONDITION_FAILED));
 	};
 
 	api.listaReservasDisponiveis = (req, res) => {
-		reserva.findAll({where: {restauranteId: req.params.id, clienteId: null, datainicio: {[Op.gt]: new Date()}}, order: ['datainicio']})
+		reserva.findAll({where: {restauranteId: req.params.id, clienteId: null, datainicio: {[Op.gt]: new Date().setHours(0, 0, 0)}}, order: ['datainicio']})
 			.then(result => res.json(result))
 			.catch(() => res.sendStatus(HttpStatus.PRECONDITION_FAILED));
 	};
 
 	api.minhasReservas = (req, res) => {
-		reserva.findAll({where: {clienteId: req.params.id, datainicio: {[Op.gt]: new Date()}}, order: ['datainicio']})
+		reserva.findAll({where: {clienteId: req.params.id, datainicio: {[Op.gt]: new Date().setHours(0, 0, 0)}}, order: ['datainicio']})
 			.then(result => res.json(result))
 			.catch(() => res.sendStatus(HttpStatus.PRECONDITION_FAILED));
 	};
 
 	api.deleta = (req, res) => {
-		reserva.destroy({where: {id: req.params.id}})
-			.then(() => res.sendStatus(HttpStatus.NO_CONTENT))
+		reserva.findOne({where: {id: req.params.id}})
+			.then(result => {
+				if (result.confirmada) {
+					res.status(HttpStatus.BAD_REQUEST).json({msg: 'A reserva já foi confirmada pelo cliente.'});
+					return;
+				} else {
+					reserva.destroy({where: {id: req.params.id}})
+						.then(() => res.sendStatus(HttpStatus.NO_CONTENT))
+						.catch(() => res.status(HttpStatus.PRECONDITION_FAILED));
+				}
+			})
 			.catch(() => res.status(HttpStatus.PRECONDITION_FAILED));
 	};
 

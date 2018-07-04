@@ -51,6 +51,14 @@ export default class CadastroReserva extends Component {
 					.then(result => {
 						this.setState({id: result.id});
 						this.numeromesa.input.value = result.numeromesa;
+						this.datareserva.input.value = this.formataData(result.datainicio);
+						this.datareserva.value = this.formataData(result.datainicio);
+						this.horainicio.input.value = this.formataHora(result.datainicio);
+						this.horainicio.value = this.formataHora(result.datainicio);
+						this.horafim.input.value = this.formataHora(result.datafim);
+						this.horafim.value = this.formataHora(result.datafim);
+						this.valorreserva.input.value = result.valorreserva;
+						this.numerolugares.input.value = result.numerolugares;
 					})
 					.catch(() => this.mostraMensagem('Não foi possível acessar o recurso no sistema.', 'danger'));
 			}
@@ -59,6 +67,30 @@ export default class CadastroReserva extends Component {
 
 	componentWillUnmount() {
 		PubSub.unsubscribe('usuario-canal');
+	}
+
+	formataData(date) {
+		let data = new Date(date);
+		let dia = data.getDate();
+		let mes = data.getMonth() + 1;
+		let ano = data.getFullYear();
+
+		return `${(dia > 9 ? '' : '0') + dia}/${(mes > 9 ? '' : '0') + mes}/${ano}`;
+	}
+
+	formataHora(date) {
+		let data = new Date(date);
+		let hora = data.getHours();
+		let minuto = "" + data.getMinutes();
+
+		let pad = "00";
+		let ans = pad.substring(0, pad.length - minuto.length) + minuto;
+
+		if (hora < 10) {
+			hora = '0' + hora;
+		}
+
+		return `${hora}:${ans}`;
 	}
 
 	envia(event) {

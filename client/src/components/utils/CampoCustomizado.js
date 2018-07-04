@@ -6,7 +6,7 @@ export class SubmitCustomizado extends Component {
 
 	render() {
 		return(
-			<button id={this.props.id} onClick={this.props.acao} 
+			<button disabled={this.props.disabled} id={this.props.id} onClick={this.props.acao} 
 				style={this.props.estilo} type={this.props.tipo} 
 				className={this.props.className} value={this.props.valor}>
 				{this.props.titulo}
