@@ -1,0 +1,18 @@
+.cadastro-usuario {
+    max-height: calc(100vh - 212px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-top: 30px;
+}
+
+.btn-black {
+    background-color: rgb(12, 12, 13);
+    color: #fff;
+}
+
+.btn-black:hover,
+.btn-black:active,
+.btn-black:focus {
+    background-color: rgb(39, 39, 58);
+    color: #fff;
+}
